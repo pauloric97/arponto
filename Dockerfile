@@ -1,20 +1,20 @@
-FROM php:8.1.4-apache
+# Utilizar a imagem oficial do Node.js como base
+FROM node:14
 
-RUN apt-get update
-RUN apt-get install --yes --force-yes cron g++ gettext libicu-dev openssl libc-client-dev libkrb5-dev libxml2-dev libfreetype6-dev libgd-dev libmcrypt-dev bzip2 libbz2-dev libtidy-dev libcurl4-openssl-dev libz-dev libmemcached-dev libxslt-dev
+# Definir o diretório de trabalho no container
+WORKDIR /usr/src/app
 
-RUN a2enmod rewrite
+# Copiar os arquivos 'package.json' e 'package-lock.json' (ou 'yarn.lock')
+COPY package*.json ./
 
-RUN docker-php-ext-install mysqli 
-RUN docker-php-ext-enable mysqli
+# Instalar as dependências do projeto
+RUN npm install
 
-RUN docker-php-ext-configure gd --with-freetype=/usr --with-jpeg=/usr
-RUN docker-php-ext-install gd
+# Copiar os arquivos do projeto
+COPY . .
 
-COPY ./ /var/www/html/
+# Expor a porta que o aplicativo irá utilizar
+EXPOSE 3000
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-COPY composer.json composer.lock /var/www/html/
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+# Comando para rodar o aplicativo
+CMD ["npm", "start"]
